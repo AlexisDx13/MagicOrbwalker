@@ -63,7 +63,7 @@ namespace MagicOrbwalker1.Essentials
         {
             var gfx = e.Graphics;
             gfx.ClearScene();
-            if (SpecialFunctions.IsTargetProcessFocused("League of Legends") && Values.DrawingsEnabled)
+            if (Values.DrawingsEnabled && SpecialFunctions.IsTargetProcessFocused("League of Legends"))
             {
                 // INFO //
 
@@ -73,11 +73,11 @@ namespace MagicOrbwalker1.Essentials
 
                 gfx.DrawTextWithBackground(_font, _fontBrush, _InfoBrush, 2, _graphicsWindow.Height - 35, $"ATK Range: {Values.attackRange}");
 
-                gfx.DrawTextWithBackground(_font, _fontBrush, _InfoBrush, 2, _graphicsWindow.Height - 50, $"Windup: {Values.Windup}");
+                gfx.DrawTextWithBackground(_font, _fontBrush, _InfoBrush, 2, _graphicsWindow.Height - 50, $"Windup: {Values.windup}");
                 // INFO //
 
                 // Orbwalker ON/OFF //
-                if ((GetAsyncKeyState(Keys.Space) & 0x8000) != 0)
+                if ((GetAsyncKeyState(Values.orbKey) & 0x8000) != 0)
                 {
                     int centerX = _graphicsWindow.Width / 2;
                     int centerY = _graphicsWindow.Height / 2;
@@ -99,6 +99,10 @@ namespace MagicOrbwalker1.Essentials
                     gfx.DrawCrosshair(_crosshairBrush, new GameOverlay.Drawing.Point(Values.EnemyPosition.X, Values.EnemyPosition.Y), crosshairSize, thickness, CrosshairStyle.Gap);
                 }
                 // Draw Cross //*/
+            }
+            else {
+                // To avoid get banned from O.S.
+                Thread.Sleep(1000);
             }
         }
 

@@ -1,23 +1,22 @@
 # Simple League of Legends External Orbwalker
-## Working on patch 14.6
+## Working on patch 14.22 but valid forever.
 
 - Efficient PixelSearch Based
-- Simple Drawings
 - Attack Speed/Range calculation
-- Auto Windup for all ADCs
+- Auto windup for all ADCs
 - Nearest Enemy calculation
 - Very Fast and low CPU cost
-- Set Sleep on Low AttackSpeed (if low AttackSpeed 0.6 - 1.7 it could cancel AutoAttacks, This is fix for it)
-+ Additional features soon
 
 **Quick Setup**
 - 1920x1080 Resolution
-- Set ingame setting AttackChampionOnly - "MB3" / MouseWheel
-- Set ingame setting ShowMoreStats - "C"
+- Set ingame setting ShowMoreStats - "N"
+- Player Attack Move Click - "Space"
++ Press "Space" to enable orbwalker
++ Press M to enable show attack range
 
 Showcase:
 
 ![Test Gif](https://github.com/sajmonekk191/MagicOrbwalker/blob/main/test.gif)
 
 
-Buy me Coffee <3: https://www.paypal.me/sajmonekk11
+Buy me Coffee <3: https://www.paypal.com/paypalme/AlexisDx13

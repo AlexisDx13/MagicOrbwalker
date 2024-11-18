@@ -1,7 +1,5 @@
-﻿using System;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
+﻿using System.Net;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace MagicOrbwalker1.Essentials.API
@@ -23,36 +21,62 @@ namespace MagicOrbwalker1.Essentials.API
             httpClient.DefaultRequestHeaders.Add("User-Agent", "API");
         }
 
-        public async Task<JObject> GetActivePlayerDataAsync()
+        public async Task<JObject?> GetActivePlayerDataAsync()
         {
             try
             {
                 var response = await httpClient.GetStringAsync(baseUrl + "activeplayer");
-                var jsonData = JObject.Parse(response);
-                return jsonData;
+                return JObject.Parse(response);
             }
-            catch (HttpRequestException e)
+            catch (Exception e) when (e is HttpRequestException || e is JsonReaderException)
             {
-                Console.WriteLine($"Error accessing server: {e.Message}");
-                return null;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Unexpected error: {e.Message}");
+                Console.WriteLine($"Error: {e.Message}");
                 return null;
             }
         }
+
         public async Task<float> GetAttackSpeedAsync()
         {
             var data = await GetActivePlayerDataAsync();
-            return data?["championStats"]["attackSpeed"].ToObject<float>() ?? -1;
+
+            if (data == null)
+            {
+                Console.WriteLine("Failed to retrieve the value of attackSpeed.");
+                return -1;
+            }
+
+            float? attackSpeed = data["championStats"]?["attackSpeed"]?.Value<float>();
+
+            if (attackSpeed == null)
+            {
+                Console.WriteLine("Failed to retrieve the value of attackSpeed.");
+                return -1;
+            }
+
+            return attackSpeed.Value;
         }
 
         public async Task<float> GetAttackRangeAsync()
         {
             var data = await GetActivePlayerDataAsync();
-            return data?["championStats"]["attackRange"].ToObject<float>() ?? -1;
+
+            if (data == null)
+            {
+                Console.WriteLine("Failed to retrieve the value of attackRange.");
+                return -1;
+            }
+
+            float? attackRange = data["championStats"]?["attackRange"]?.Value<float>();
+
+            if (attackRange == null)
+            {
+                Console.WriteLine("Failed to retrieve the value of attackRange.");
+                return -1;
+            }
+
+            return attackRange.Value;
         }
+
         public async Task<string> GetChampionNameAsync()
         {
             try
@@ -62,48 +86,25 @@ namespace MagicOrbwalker1.Essentials.API
 
                 if (playerList.Count > 0)
                 {
-                    return playerList[0]["championName"].ToString();
+                    var championName = playerList[0]?["championName"]?.ToString();
+                    if (championName == null)
+                    {
+                        Console.WriteLine("Unknown Champion");
+                        return "Unknown Champion";
+                    }
+                    return championName;
                 }
                 else
                 {
                     Console.WriteLine("No player data found.");
-                    return null;
+                    return "No Player Data";
                 }
-            }
-            catch (HttpRequestException e)
-            {
-                Console.WriteLine($"Error accessing server: {e.Message}");
-                return null;
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Unexpected error: {e.Message}");
-                return null;
+                Console.WriteLine($"Error: {e.Message}");
+                return "Error occurred";
             }
         }
-        public async Task<bool?> IsChampionOrEntityDeadAsync()
-        {
-            try
-            {
-                var response = await httpClient.GetStringAsync(baseUrl + "playerlist");
-                var playerList = JArray.Parse(response);
-
-                if (playerList.Count > 0)
-                {
-                    bool isDead = playerList[0]["isDead"].ToObject<bool>();
-                    return isDead;
-                }
-                else
-                {
-                    Console.WriteLine("No player data found.");
-                    return null;
-                }
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
     }
 }

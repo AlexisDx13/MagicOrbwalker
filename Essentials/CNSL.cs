@@ -23,7 +23,7 @@ namespace MagicOrbwalker1.Essentials
             Console.WriteLine("");
             Console.WriteLine("Orbwalker is running in background!");
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("Hold Space to Activate");
+            Console.WriteLine("Hold 'v' key to Activate");
             Console.WriteLine("");
             Console.WriteLine("");
             Console.ResetColor();
@@ -35,8 +35,7 @@ namespace MagicOrbwalker1.Essentials
             Console.WriteLine("Main Menu:");
             Console.WriteLine("");
             Console.WriteLine("1. Cheat");
-            Console.WriteLine("2. Settings");
-            Console.WriteLine("3. Exit");
+            Console.WriteLine("2. Exit");
             Console.WriteLine("");
             Console.Write("Select an option: ");
 
@@ -48,9 +47,6 @@ namespace MagicOrbwalker1.Essentials
                     CheatMenu();
                     break;
                 case "2":
-                    SettingsMenu();
-                    break;
-                case "3":
                     Environment.Exit(0);
                     break;
                 default:
@@ -66,12 +62,9 @@ namespace MagicOrbwalker1.Essentials
             PrintStart();
             Console.WriteLine("Cheat Menu:");
             Console.WriteLine("");
-            Console.WriteLine("1. Set Sleep on Low AttackSpeed");
-            if (Values.ShowAttackRange) SucessMessage("2. Toggle Show Range");
-            else ErrorMessage("2. Toggle Show Range");
-            if (Values.AttackChampionOnly) SucessMessage("3. Toggle Attack Champion Only");
-            else ErrorMessage("3. Toggle Attack Champion Only");
-            Console.WriteLine("4. Back to Main Menu");
+            if (Values.ShowAttackRange) SucessMessage("1. Toggle Show Range");
+            else ErrorMessage("1. Toggle Show Range");
+            Console.WriteLine("2. Back to Main Menu");
             Console.WriteLine("");
             Console.Write("Select an option: ");
 
@@ -79,19 +72,11 @@ namespace MagicOrbwalker1.Essentials
             switch (input)
             {
                 case "1":
-                    SetSleepOnAS();
-                    break;
-                case "2":
                     if (Values.ShowAttackRange) Values.ShowAttackRange = false;
                     else Values.ShowAttackRange = true;
                     CheatMenu();
                     break;
-                case "3":
-                    if (Values.AttackChampionOnly) Values.AttackChampionOnly = false;
-                    else Values.AttackChampionOnly = true;
-                    CheatMenu();
-                    break;
-                case "4":
+                case "2":
                     LobbyShow();
                     break;
                 default:
@@ -127,26 +112,6 @@ namespace MagicOrbwalker1.Essentials
                     Thread.Sleep(500);
                     SettingsMenu();
                     break;
-            }
-        }
-
-        public static void SetSleepOnAS()
-        {
-            Console.WriteLine("");
-            Console.WriteLine("Current Sleep on AttackSpeed is " + Values.SleepOnLowAS);
-            Console.Write("Enter Sleep on AttackSpeed 0 > 1.75 (in milliseconds): ");
-            if (int.TryParse(Console.ReadLine(), out int sleeponAS))
-            {
-                Values.SleepOnLowAS = sleeponAS;
-                SucessMessage($"Sleep on low AttackSpeed set to: {sleeponAS}ms");
-                Thread.Sleep(500);
-                CheatMenu();
-            }
-            else
-            {
-                ErrorMessage("Invalid input. Please enter a number.");
-                Thread.Sleep(500);
-                CheatMenu();
             }
         }
 

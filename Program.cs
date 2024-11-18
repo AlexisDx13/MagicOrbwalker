@@ -1,5 +1,3 @@
-// udìlat aditional Windup
-
 using System.Runtime.InteropServices;
 using MagicOrbwalker1.Essentials;
 using MagicOrbwalker1.Essentials.API;
@@ -16,8 +14,7 @@ namespace MagicOrbwalker1
         [DllImport("user32.dll")]
         static extern short GetAsyncKeyState(Keys vKey);
 
-        static bool cKeyPressed = false;
-        static bool middlepressed = false;
+        static bool wasKeyPressed = false;
 
         [STAThread]
         static async Task Main()
@@ -29,57 +26,43 @@ namespace MagicOrbwalker1
             // Menu //
             Thread LobbyHandle = new Thread(() => CNSL.LobbyShow());
             LobbyHandle.Start();
-            // Menu //
 
             // Drawings //
-            Thread overlay = new Thread(() => makeoverlay());
-            overlay.Start();
-            // Drawings //
 
-            // Orbwalker Loop //
 
-            while (true)
-            {
-                var apiClient = new API();
-                Values.IsChampionDead = await apiClient.IsChampionOrEntityDeadAsync();
-                Values.SelectedChamp = await apiClient.GetChampionNameAsync();
+            // Orbwalker Initialization //
+            var apiClient = new API();
 
-                if (SpecialFunctions.IsTargetProcessFocused("League of Legends"))
-                {
-                    bool isChampionDead = Values.IsChampionDead.HasValue ? Values.IsChampionDead.Value : true;
-                    if (!isChampionDead && Values.MakeCorrectWindup())
-                    {
-                        Thread.Sleep(1);
-                        if ((GetAsyncKeyState(Keys.Space) & 0x8000) != 0 && SpecialFunctions.AAtick < Environment.TickCount)
-                        {
-                            if (Values.ShowAttackRange && !cKeyPressed)
-                            {
-                                Keyboard.SendKeyDown(ScanCodeShort.KEY_C);
-                                cKeyPressed = true;
-                            }
-                            if (Values.AttackChampionOnly && !middlepressed)
-                            {
-                                SendMiddleMouseDown();
-                                middlepressed = true;
-                            }
-                            OrbwalkEnemy().Wait();
-                        }
-                        else if (Values.ShowAttackRange && cKeyPressed)
-                        {
-                            Keyboard.SendKeyUp(ScanCodeShort.KEY_C);
-                            cKeyPressed = false;
-                        }
-                        else if (Values.AttackChampionOnly && middlepressed)
-                        {
-                            SendMiddleMouseUp();
-                            middlepressed = false;
-                        }
-                    }
+            while (Values.selectedChamp == "Default"){
+                if ((GetAsyncKeyState(Values.orbKey) & 0x8000) != 0) {
+                    Keyboard.SendKeyDown(ScanCodeShort.KEY_N);
+                    Values.selectedChamp = await apiClient.GetChampionNameAsync();
                 }
+                Thread.Sleep(500);
             }
 
-            // Orbwalker Loop //
+            Values.MakeCorrectWindup();
+            Values.attackRange = await apiClient.GetAttackRangeAsync();
 
+            // Orbwalker Loop //
+            while (true)
+            {
+                bool isKeyPressed = (GetAsyncKeyState(Values.attackRangeKey) & 0x8000) != 0;
+                if ((GetAsyncKeyState(Values.orbKey) & 0x8000) != 0)
+                {
+                    OrbwalkEnemy().Wait();
+                }
+                else if (!isKeyPressed && wasKeyPressed && Values.ShowAttackRange)
+                {
+                    Keyboard.SendKeyDown(ScanCodeShort.KEY_N);
+                    Keyboard.SendKeyUp(ScanCodeShort.KEY_N);
+                    Keyboard.SendKeyDown(ScanCodeShort.KEY_N);
+                }
+                else {
+                    Thread.Sleep(50);
+                }
+                wasKeyPressed = isKeyPressed;
+            }
         }
 
         private static void makeoverlay()
@@ -90,45 +73,41 @@ namespace MagicOrbwalker1
             }
         }
 
-        private static Random rnd = new Random();
         private static async Task OrbwalkEnemy()
         {
-            if (await SpecialFunctions.CanAttack())
+            if (Environment.TickCount >= SpecialFunctions.nextAaTick)
             {
-                Values.EnemyPosition = await ScreenCapture.GetEnemyPosition ();
-                if (Values.EnemyPosition != Point.Empty && Values.EnemyPosition != new Point(0, 0))
+                Values.EnemyPosition = ScreenCapture.GetEnemyPosition ();
+                if (Values.EnemyPosition != Point.Empty)
                 {
                     Values.originalMousePosition = new Point(Cursor.Position.X, Cursor.Position.Y);
                     SpecialFunctions.ClickAt(Values.EnemyPosition);
 
-                    SpecialFunctions.AAtick = Environment.TickCount;
-                    int windupDelay = await SpecialFunctions.GetAttackWindup();
-                    SpecialFunctions.MoveCT = Environment.TickCount + windupDelay;
+                    var (attackWindup, attackDelay) = await SpecialFunctions.GetAttackParameters();//1350;
+                    SpecialFunctions.nextAaTick = attackDelay + Environment.TickCount;
+                    int windupDelay = attackWindup + Values.extraWindup;
+                    Thread.Sleep(windupDelay);
+
+                    SpecialFunctions.HandleAbilityKeys(Values.EnemyPosition);
 
                     SpecialFunctions.SetCursorPos(Values.originalMousePosition.X, Values.originalMousePosition.Y);
-
-                    if (Values.attackSpeed < 1.75)
-                    {
-                        Thread.Sleep(Values.SleepOnLowAS);
-                    }
-
                 }
                 else
                 {
                     SpecialFunctions.Click();
+                    Thread.Sleep(300);
                 }
-            }
-            else if (SpecialFunctions.CanMove() && SpecialFunctions.MoveCT <= Environment.TickCount)
-            {
-                SpecialFunctions.Click();
-
-                Values.originalMousePosition = Cursor.Position;
-                SpecialFunctions.MoveCT = Environment.TickCount + rnd.Next(50, 80);
             }
             else
             {
-                Thread.Sleep(1);
                 SpecialFunctions.Click();
+                int nextAttack = SpecialFunctions.nextAaTick;
+                if (nextAttack >= (Environment.TickCount + 300)) {
+                    Thread.Sleep(300);
+                }
+                else if (nextAttack > Environment.TickCount) {
+                    Thread.Sleep(nextAttack - Environment.TickCount);
+                }
             }
         }
     }
