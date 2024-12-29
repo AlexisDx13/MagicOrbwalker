@@ -23,7 +23,7 @@ namespace MagicOrbwalker1.Essentials
                 int rangeYT = 480;
                 int rangeYB = 320;
                 
-                rect = new Rectangle(playerPos.X - rangeXL, playerPos.Y - rangeYT, rangeXL+rangeXR, rangeYT+rangeYB);
+                rect = new Rectangle(0, 0, 1920, 1080);
             }
 
             return rect;

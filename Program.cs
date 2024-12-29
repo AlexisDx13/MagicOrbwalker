@@ -82,6 +82,8 @@ namespace MagicOrbwalker1
                 {
                     Values.originalMousePosition = new Point(Cursor.Position.X, Cursor.Position.Y);
                     SpecialFunctions.ClickAt(Values.EnemyPosition);
+                    Thread.Sleep(9);
+                    SpecialFunctions.MoveCursorTo(Values.originalMousePosition.X, Values.originalMousePosition.Y, 2, 5);
 
                     var (attackWindup, attackDelay) = await SpecialFunctions.GetAttackParameters();//1350;
                     SpecialFunctions.nextAaTick = attackDelay + Environment.TickCount;
@@ -89,21 +91,19 @@ namespace MagicOrbwalker1
                     Thread.Sleep(windupDelay);
 
                     SpecialFunctions.HandleAbilityKeys(Values.EnemyPosition);
-
-                    SpecialFunctions.SetCursorPos(Values.originalMousePosition.X, Values.originalMousePosition.Y);
                 }
                 else
                 {
                     SpecialFunctions.Click();
-                    Thread.Sleep(300);
+                    Thread.Sleep(50);
                 }
             }
             else
             {
                 SpecialFunctions.Click();
                 int nextAttack = SpecialFunctions.nextAaTick;
-                if (nextAttack >= (Environment.TickCount + 300)) {
-                    Thread.Sleep(300);
+                if (nextAttack >= (Environment.TickCount + 100)) {
+                    Thread.Sleep(100);
                 }
                 else if (nextAttack > Environment.TickCount) {
                     Thread.Sleep(nextAttack - Environment.TickCount);

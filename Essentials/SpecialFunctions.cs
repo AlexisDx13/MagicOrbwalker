@@ -69,7 +69,6 @@ namespace MagicOrbwalker1.Essentials
 
         public static void HandleAbilityKeys(System.Drawing.Point cursorPosition)
         {
-            int spellSleep = 0;
             KeyScanCode[] keysToCheck = {
                 new KeyScanCode(Keys.Q, ScanCodeShort.KEY_Q),
                 new KeyScanCode(Keys.W, ScanCodeShort.KEY_W),
@@ -78,28 +77,77 @@ namespace MagicOrbwalker1.Essentials
                 new KeyScanCode(Keys.T, ScanCodeShort.KEY_T),
                 new KeyScanCode(Keys.F, ScanCodeShort.KEY_F)
             };
-
-            SetCursorPos(cursorPosition.X, cursorPosition.Y);
-
-            // Simula la pulsación de la tecla
-            Keyboard.SendKeyDown(ScanCodeShort.SHIFT);
+            int keysPressed = 0;
+            Point initialCursorPos = Point.Empty;
 
             foreach (var keyScan in keysToCheck)
             {
                 // Verifica si la tecla está presionada
                 if ((GetAsyncKeyState(keyScan.Key) & 0x8000) != 0)
                 {
+                    if (keysPressed == 0)
+                    {
+                        initialCursorPos = new Point(Cursor.Position.X, Cursor.Position.Y);
+                        SetCursorPos(cursorPosition.X, cursorPosition.Y);
+
+                        // Simula la pulsación de la tecla
+                        Keyboard.SendKeyDown(ScanCodeShort.SHIFT);
+                    }
                     Keyboard.SendKeyUp(keyScan.ScanCode);
 
                     Keyboard.SendKeyDown(keyScan.ScanCode);
 
-                    spellSleep += 335;
+                    keysPressed++;
+
+                    if (keysPressed == 2)
+                    {
+                        break;
+                    }
                 }
             }
 
-            Keyboard.SendKeyUp(ScanCodeShort.SHIFT);
+            if (keysPressed > 0)
+            {
+                // Mover el cursor a la posición original
+                Thread.Sleep(16);
+                MoveCursorTo(initialCursorPos.X, initialCursorPos.Y, 2, 5);
 
-            Thread.Sleep(spellSleep == 335 ? 100 : spellSleep);
+                Keyboard.SendKeyUp(ScanCodeShort.SHIFT);
+
+                if (keysPressed == 1)
+                {
+                    Thread.Sleep(485);
+                }
+                else if (keysPressed == 2)
+                {
+                    Thread.Sleep(645);
+                }
+            }
+        }
+
+        public static void MoveCursorTo(int targetX, int targetY, int steps, int delayMs)
+        {
+            int startX = Cursor.Position.X;
+            int startY = Cursor.Position.Y;
+
+            // Calcular la distancia en X y Y
+            double deltaX = (targetX - startX) / (double)steps;
+            double deltaY = (targetY - startY) / (double)steps;
+
+            // Mover el cursor en pequeños incrementos
+            for (int i = 1; i <= steps; i++)
+            {
+                int newX = (int)(startX + deltaX * i);
+                int newY = (int)(startY + deltaY * i);
+
+                SetCursorPos(newX, newY);
+
+                // Solo pausar si aún no estamos en el último paso
+                if (i < steps)
+                {
+                    Thread.Sleep(delayMs);
+                }
+            }
         }
 
         public static int nextAaTick;
